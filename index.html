@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>이슬람 패턴 공방</title>
+<meta name="description" content="이슬람 기하학 무늬로 카펫과 창틀을 직접 디자인해 보는 체험 웹앱">
+<meta property="og:title" content="이슬람 패턴 공방">
+<meta property="og:description" content="테두리·배경·포인트 무늬를 고르고 색을 입혀 나만의 카펫과 창틀을 만들어 보세요.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0f1f3d">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: kiosk split — mint "viewing wall" with the live design on the left, navy control desk on the right; stacks on phones. */
+:root{
+  --navy:#0f1f3d; --navy-2:#173159; --navy-3:#21426f;
+  --mint:#93d5cc; --mint-soft:#c4ebe5; --paper:#f1faf8;
+  --glow:#6fe6d9; --muted:#a9bfd6;
+  --display:"Gowun Batang","Nanum Myeongjo",Georgia,serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color-scheme:dark;
+  /* design colors (set live by script) */
+  --ln:#13213d; --f0:#b9e0da; --f1:#f4b63f; --f2:#0f7a4d; --f3:#b3192f; --f4:#2050a8; --gl:#fbfdfd;
+}
+*{box-sizing:border-box}
+html,body,#app{height:100%}
+body{background:var(--navy);color:var(--paper);font-family:var(--body);font-size:15px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
+
+/* ---------- home: always one screen ---------- */
+.home{height:100%;overflow:hidden;padding-block:clamp(12px,3.5vh,40px);padding-inline:16px;display:flex}
+.home-inner{width:min(1040px,100%);margin-inline:auto;display:flex;flex-direction:column;gap:clamp(10px,2.6vh,26px);min-height:0;flex:1}
+.home h1{font-family:var(--display);font-weight:700;font-size:clamp(22px,min(5vw,5.6vh),46px);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.home .lede{margin:6px 0 0;color:var(--muted);max-width:62ch;font-size:clamp(13px,1.9vh,15px)}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--glow);font-weight:600}
+.mode-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,2vw,22px)}
+.mode-card{min-height:0;background:var(--mint);border:0;border-radius:8px;padding:clamp(10px,2.2vh,22px);display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.6vh,14px);text-align:center;color:var(--navy);transition:transform .2s ease, box-shadow .2s ease}
+.mode-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.mc-art{flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center}
+.mc-art svg{height:100%;width:auto;max-width:100%;display:block;filter:drop-shadow(0 6px 10px rgba(15,31,61,.35))}
+.mc-txt{display:grid;gap:2px;justify-items:center}
+.mode-card h2{font-family:var(--display);font-size:clamp(18px,3.4vh,28px);margin:0;line-height:1.2}
+.mode-card p{margin:0;font-size:13px;color:#24456b}
+.mode-card .go svg{flex:none}
+.mode-card .go{white-space:nowrap;margin-top:4px;display:inline-flex;gap:8px;align-items:center;font-weight:600;font-size:14px;background:var(--navy);color:var(--paper);padding:7px 14px;border-radius:999px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border-top:1px solid var(--navy-3);padding-top:clamp(10px,2vh,20px)}
+.facts div{min-width:0}
+.facts b{display:block;font-family:var(--display);font-size:17px;margin-bottom:2px;color:var(--mint-soft)}
+.facts span{color:var(--muted);font-size:13.5px}
+@media (max-height:760px),(max-width:640px){.facts{display:none}}
+@media (max-height:540px){.home .lede,.eyebrow,.mode-card p{display:none}}
+@media (max-width:420px){.mode-card p{display:none}.mode-card .go{font-size:13px;padding:6px 11px}}
+
+/* ---------- studio ---------- */
+.studio{display:grid;grid-template-columns:auto minmax(0,1fr);height:100%;overflow:hidden}
+.stage{background:var(--mint);position:relative;display:grid;align-content:center;justify-items:center;gap:10px;padding-block:12px;padding-inline:44px;color:var(--navy);min-height:0}
+.stage::before,.stage::after{content:"";position:absolute;top:0;bottom:0;width:30px;opacity:.75;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='44' viewBox='0 0 28 44'%3E%3Cpath d='M14 0C25 11 25 11 14 22C3 33 3 33 14 44M14 0C3 11 3 11 14 22C25 33 25 33 14 44' fill='none' stroke='%23ffffff' stroke-opacity='.75' stroke-width='1.4'/%3E%3Ccircle cx='14' cy='22' r='2.2' fill='none' stroke='%23ffffff' stroke-opacity='.75' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-color:#86cbc2}
+.stage::before{left:0}.stage::after{right:0}
+.stage .cap{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.stage .cap small{display:block;font-size:13px;opacity:.75}
+.art-wrap{position:relative;height:calc(100dvh - 24px);aspect-ratio:632/1112;max-width:min(100%,52vw);box-shadow:0 18px 40px rgba(15,31,61,.35)}
+.zoom{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(15,31,61,.82);color:#fff;display:grid;place-items:center}
+.zoom svg{width:20px;height:20px}
+.big{position:fixed;inset:0;z-index:20;background:rgba(8,16,32,.94);display:grid;place-items:center;padding:16px}
+.big .art-big{height:calc(100dvh - 32px);aspect-ratio:632/1112;max-width:100%}
+.big .art-big svg{width:100%;height:100%;display:block}
+.big .close{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;width:44px;height:44px;border-radius:50%;border:0;background:var(--paper);color:var(--navy);font-size:22px;line-height:1}
+.art-wrap svg{width:100%;height:100%;display:block}
+
+.panel{padding-block:14px;padding-inline:clamp(16px,3vw,40px);display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;overflow:auto}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.panel-head .ttl{min-width:0}
+.panel-head h1{font-family:var(--display);font-weight:700;font-size:clamp(19px,2vw,24px);margin:0;line-height:1.2}
+.panel-head .mode-tag{display:block;margin-top:2px;font-size:13px;color:var(--glow);letter-spacing:.06em}
+.instr{text-align:center;margin:0;font-weight:600;font-size:14px;color:var(--navy)}
+.instr small{display:none}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{flex:1 1 0;min-width:70px;border:0;border-radius:10px 10px 0 0;padding:9px 8px 8px;background:var(--navy-3);color:var(--mint-soft);font-family:var(--display);font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px;position:relative}
+.tab{white-space:nowrap}
+.tab .en{font-size:12px;opacity:.75}
+.tabs.five .en{display:none}
+.tab[aria-selected="true"]{background:var(--mint);color:var(--navy)}
+.tab .chk{width:16px;height:16px;border-radius:50%;background:var(--glow);display:none;flex:none}
+.tab.done .chk{display:inline-block}
+.tab .chk svg{display:block}
+
+.sheet{background:#5f9f9a;background:linear-gradient(#69a8a2,#5a9893);border-radius:0 0 14px 14px;padding:14px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.tabbox{flex:1;min-height:0;display:flex;flex-direction:column}
+.tabbox .sheet{flex:1}
+.opt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(100%,max(280px,calc((100dvh - 300px) * 1.45 - 100px)));margin-inline:auto}
+.opt-grid.with-slider{width:min(100%,max(280px,calc((100dvh - 345px) * 1.45 - 100px)))}
+.opt{border:0;padding:6px;background:var(--navy-2);border-radius:12px;display:grid;gap:7px;transition:transform .15s ease}
+.opt:hover{transform:translateY(-2px)}
+.opt .thumb{aspect-ratio:1;background:#fff;overflow:hidden;border-radius:2px;--ln:#1a1a1a;--f0:#fff;--f1:#fff;--f2:#fff;--f3:#fff;--f4:#fff;--gl:#fff}
+.opt .thumb svg{width:100%;height:100%;display:block}
+.opt .nm{font-size:12.5px;color:var(--mint-soft);line-height:1.2;padding-block:2px;display:grid;place-items:center}
+.opt[aria-pressed="true"]{box-shadow:0 0 0 3px var(--glow),0 0 18px rgba(111,230,217,.6)}
+.opt .none{display:grid;place-items:center;height:100%;color:var(--navy);font-family:var(--display);font-size:18px}
+
+.info{background:var(--navy);border-radius:10px;padding:10px 14px;display:grid;gap:2px}
+.info b{font-family:var(--display);font-size:16px;color:var(--mint-soft)}
+.info span{font-size:13px;color:var(--muted);line-height:1.45}
+
+.slider{display:flex;justify-content:center}
+.slider label{font-family:var(--display);font-size:13px;color:var(--mint-soft);white-space:nowrap}
+.slider .row{display:flex;align-items:center;gap:10px;background:var(--navy-2);padding:6px 14px;border-radius:999px;width:min(420px,100%)}
+.slider input{flex:1;min-width:0;accent-color:var(--glow)}
+
+.pal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hint{margin:0;text-align:center;color:var(--navy);font-size:13px;font-weight:600}
+.pal{border:0;background:var(--navy-2);border-radius:12px;padding:8px;display:grid;gap:6px}
+.pal .sw{display:grid;grid-template-columns:repeat(6,1fr);height:28px;border-radius:4px;overflow:hidden}
+.pal .nm{font-size:13px;color:var(--mint-soft)}
+.pal[aria-pressed="true"]{box-shadow:0 0 0 3px var(--glow),0 0 18px rgba(111,230,217,.6)}
+.custom{background:var(--navy);border-radius:10px;padding:14px 16px;display:grid;gap:10px}
+.custom b{font-family:var(--display);font-size:16px;color:var(--mint-soft)}
+.custom-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.custom-h small{font-size:12px;color:var(--muted)}
+.slots{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.slot{border:0;background:none;padding:4px 0;border-radius:10px;display:grid;justify-items:center;gap:3px;font-size:12px;color:var(--muted)}
+.slot i{width:34px;height:34px;border-radius:50%;border:2px solid #fff3;display:block}
+.slot[aria-pressed="true"]{background:var(--navy-3);color:#fff}
+.slot[aria-pressed="true"] i{border-color:var(--glow);box-shadow:0 0 0 3px rgba(111,230,217,.35)}
+.panel{position:relative}
+.picker{position:absolute;inset:0;z-index:5;background:var(--navy);padding:14px clamp(14px,3vw,36px);display:flex;flex-direction:column;gap:10px}
+.pk-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pk-head b{font-family:var(--display);font-size:18px;color:var(--mint-soft)}
+.pk-cmp{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.pk-cmp i{width:44px;height:28px;border-radius:6px;border:2px solid #fff4;display:block}
+.pk-cap{margin:0;font-size:12px;color:var(--muted)}
+.pk-field{position:relative;flex:1;min-height:90px;border-radius:10px;touch-action:none;cursor:crosshair}
+.pk-dot{position:absolute;width:24px;height:24px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.4);transform:translate(-50%,-50%);pointer-events:none}
+.pk-hue{position:relative;flex:none;height:28px;border-radius:14px;touch-action:none;cursor:pointer;background:linear-gradient(to right,#f00,#ff0 16.67%,#0f0 33.33%,#0ff 50%,#00f 66.67%,#f0f 83.33%,#f00)}
+.pk-hue .pk-dot{top:50%}
+.pk-rows{display:grid;gap:2px}
+.pk-row{display:grid;grid-template-columns:3em minmax(0,1fr) 2.6em;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.pk-row input{width:100%;accent-color:var(--glow);margin:0;height:22px}
+.pk-row output{text-align:right;font-variant-numeric:tabular-nums;color:#fff}
+.pk-sw{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;width:min(100%,480px)}
+.pk-sw button{border:0;padding:0;aspect-ratio:1;border-radius:5px;box-shadow:inset 0 0 0 1px #fff3}
+.pk-btns{display:flex;gap:8px;justify-content:flex-end}
+.pk-btns .btn{padding:9px 18px}
+.pk-btns .btn.ghost{background:var(--navy-3)}
+@media (max-height:640px){.pk-cap,.pk-sw{display:none}.picker{gap:7px;padding-block:10px}}
+@media (max-height:480px){.pk-rows{display:none}}
+@media (max-aspect-ratio:19/20) and (max-height:760px){.pk-cap,.pk-sw{display:none}.picker{gap:7px;padding:10px 12px}.pk-field{min-height:70px}}
+
+
+.done-box{display:grid;gap:14px;text-align:center;justify-items:center;padding:8px 0}
+.done-box h3{font-family:var(--display);font-size:30px;margin:0;color:var(--navy)}
+.done-box p{margin:0;color:var(--navy);max-width:44ch}
+.recipe{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.recipe span{background:var(--navy);color:var(--mint-soft);border-radius:999px;padding:5px 12px;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{border:0;border-radius:999px;padding:11px 20px;font-weight:600;background:var(--navy);color:var(--paper)}
+.btn.primary{background:var(--glow);color:var(--navy)}
+.btn:hover{filter:brightness(1.1)}
+
+.nav{display:flex;gap:8px;flex:none}
+.circ{width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;background:#8d97ab;color:#fff}
+.circ.next{background:var(--glow);color:var(--navy)}
+.circ[hidden]{display:none}
+.circ svg{width:21px;height:21px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--paper);color:var(--navy);padding:10px 18px;border-radius:999px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:10;max-width:calc(100% - 32px);text-align:center}
+
+/* short landscape windows */
+@media (max-height:620px){
+  .panel{padding-block:8px;gap:6px}
+  .panel-head .mode-tag{display:none}
+  .panel-head h1{font-size:17px}
+  .circ{width:38px;height:38px}
+  .instr{display:none}
+  .sheet{padding:10px;gap:8px}
+  .tab{padding:6px 4px;font-size:13px}
+  .tab .en{display:none}
+  .info{padding:6px 12px}
+  .info span{font-size:12px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+  .opt-grid{width:min(100%,max(200px,calc((100dvh - 190px) * 1.5)))}
+  .opt-grid.with-slider{width:min(100%,max(200px,calc((100dvh - 230px) * 1.5)))}
+  .opt .nm{display:none}
+  .pal .sw{height:18px}.pal{padding:6px;gap:4px}
+  .custom{padding:8px 10px;gap:6px}.custom b{display:none}
+  .slot i{width:28px;height:28px}
+  .done-box{gap:8px}.done-box h3{font-size:22px}.done-box p{font-size:13px}
+}
+@media (max-height:440px){.info{display:none}.opt-grid{width:min(100%,max(180px,calc((100dvh - 130px) * 1.5)))}.opt-grid.with-slider{width:min(100%,max(180px,calc((100dvh - 170px) * 1.5)))}}
+
+/* portrait screens: preview on top, controls below */
+@media (max-aspect-ratio:19/20){
+  .studio{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+  .stage{padding-block:8px;padding-inline:26px}
+  .stage::before,.stage::after{width:16px}
+  .art-wrap{height:46dvh;width:auto;max-width:100%}
+  .panel{padding-block:8px 10px;padding-inline:12px;gap:8px}
+  .panel-head h1,.panel-head .mode-tag{font-size:14px}
+  .panel-head h1{font-family:var(--body);font-weight:600}
+  .instr{display:none}
+  .opt-grid{width:min(100%,460px,max(170px,calc((54dvh - 205px) * 1.5)));gap:8px}
+  .opt-grid.with-slider{width:min(100%,460px,max(170px,calc((54dvh - 245px) * 1.5)))}
+  .info{padding:8px 12px}
+  .info b{font-size:14px}
+  .info span{font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .sheet{padding:10px;gap:8px}
+  .tab{padding:7px 4px;font-size:13px;min-width:0}
+  .tab .en{display:none}
+  .circ{width:40px;height:40px}
+  .pal .sw{height:20px}
+  .slot i{width:28px;height:28px}
+  .custom{padding:10px}
+  .custom b{font-size:14px}
+  .done-box{gap:8px;padding:0}.done-box h3{font-size:22px}.done-box p{font-size:13px}
+  .btn{padding:9px 14px;font-size:14px}
+}
+@media (max-aspect-ratio:19/20) and (max-height:700px){
+  .art-wrap{height:42dvh}
+  .info span{-webkit-line-clamp:1}
+  .opt-grid{width:min(100%,460px,max(160px,calc((58dvh - 175px) * 1.5)))}
+  .opt-grid.with-slider{width:min(100%,460px,max(160px,calc((58dvh - 215px) * 1.5)))}
+  .custom b{display:none}
+  .done-box p{display:none}
+}
+@media (max-width:520px){
+  .opt-grid,.pal-grid{gap:8px}
+  .opt{padding:4px}
+  .opt .nm{display:none}
+  .pal .nm{font-size:12px}
+}
+/* last-resort squeezes applied by fit() */
+.panel.tight .info span,.panel.tight .done-box p,.panel.tight .hint{display:none}
+.panel.tighter .info,.panel.tighter .recipe,.panel.tighter .custom b,.panel.tighter .panel-head .mode-tag{display:none}
+.opt-grid{max-width:100%}
+.panel.tight .pal-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.panel.tight .pal .nm{display:none}
+.panel.tight .pal{padding:4px}
+.panel.tight .pal .sw{grid-template-columns:repeat(3,1fr);height:30px}
+.panel.tighter .custom-h{display:none}
+.panel.tighter .custom{gap:6px;padding:8px}
+.panel.tighter .slot{font-size:11px;padding:2px 0}
+.panel.tighter .slot i{width:24px;height:24px}
+/* tabs never overflow: fitTabs() drops English, then the check, then shrinks text */
+.tab{min-width:0!important;padding-inline:4px!important;overflow:hidden}
+.tabs .tab .en{display:inline}
+.tabs.no-en .tab .en{display:none}
+.tabs.no-chk .tab .chk{display:none!important}
+.tabs.no-chk .tab.done{box-shadow:inset 0 -3px 0 var(--glow)}
+.tabs.small .tab{font-size:12px!important;letter-spacing:-.02em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div id="app"></div>
+<div class="toast" id="toast" hidden></div>
+<script>
+/* In-app browser escape (KakaoTalk, Facebook, Instagram, Naver, Band, Line…) — only when this page is opened directly, not inside a frame */
+(function(){
+  if(window.top!==window)return;
+  var ua=navigator.userAgent||'',url=location.href;
+  var kakao=/KAKAOTALK/i.test(ua), line=/\bLine\//i.test(ua);
+  var inApp=kakao||line||/FBAN|FBAV|FB_IAB|FBIOS|Instagram|NAVER\(inapp|NAVER\/|DaumApps|KAKAOSTORY|BAND\/|everytimeApp|Whale\/[\d.]+ .*inapp|wv\)/i.test(ua);
+  if(!inApp)return;
+  var ios=/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1), android=/Android/i.test(ua);
+  if(kakao){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);setTimeout(guide,1200);return;}
+  if(line){location.href=url+(url.indexOf('?')>-1?'&':'?')+'openExternalBrowser=1';return;}
+  if(android){location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(url)+';end';setTimeout(guide,1500);return;}
+  guide();
+  function guide(){
+    function show(){
+      if(document.getElementById('inapp-guide'))return;
+      var d=document.createElement('div');d.id='inapp-guide';
+      d.style.cssText='position:fixed;inset:0;z-index:99;background:rgba(10,20,40,.96);color:#f1faf8;display:grid;place-items:center;padding:24px;font-family:"IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif;text-align:center';
+      var where=ios?'Safari':'Chrome';
+      d.innerHTML='<div style="max-width:340px;display:grid;gap:14px">'
+        +'<div style="font-size:22px;font-weight:700">'+where+'에서 열어 주세요</div>'
+        +'<div style="font-size:15px;line-height:1.6;color:#c4ebe5">이 앱 안의 브라우저에서는 그림 저장 등 일부 기능이 잘 동작하지 않아요.<br>화면의 <b>⋯</b> 또는 <b>공유</b> 메뉴에서<br><b>‘'+(ios?'Safari로 열기':'다른 브라우저로 열기')+'’</b>를 눌러 주세요.</div>'
+        +'<button id="ia-copy" style="border:0;border-radius:999px;padding:12px 20px;font-weight:700;font-size:15px;background:#6fe6d9;color:#0f1f3d">주소 복사하기</button>'
+        +'<div id="ia-url" style="font-size:12px;color:#a9bfd6;word-break:break-all;user-select:all">'+url.replace(/</g,'&lt;')+'</div>'
+        +'<button id="ia-close" style="border:0;background:none;color:#a9bfd6;text-decoration:underline;font-size:13px">그냥 여기서 볼게요</button></div>';
+      document.body.appendChild(d);
+      document.getElementById('ia-close').onclick=function(){d.remove();};
+      document.getElementById('ia-copy').onclick=function(){var b=this;
+        function ok(){b.textContent='복사했어요! 브라우저 주소창에 붙여 넣으세요';}
+        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,fallback);}else fallback();
+        function fallback(){var t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();try{document.execCommand('copy');ok();}catch(e){}t.remove();}
+      };
+    }
+    if(document.body)show();else document.addEventListener('DOMContentLoaded',show);
+  }
+})();
+</script>
+
+<script>
+(()=>{
+const PI=Math.PI;
+const W=632,H=1112,PAD=16,BAND=60;
+const FX=88,FY=88,FW=456,FH=936,CX=FX+FW/2,CY=FY+FH/2;
+
+/* ---------- geometry helpers ---------- */
+const f2=n=>(+n).toFixed(2);
+const pd=pts=>'M'+pts.map(p=>f2(p[0])+' '+f2(p[1])).join('L')+'Z';
+const pol=(cx,cy,r,a)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+function star(cx,cy,n,ro,ri,rot=0){const p=[];for(let i=0;i<2*n;i++){p.push(pol(cx,cy,i%2?ri:ro,rot+i*PI/n));}return pd(p);}
+function ngon(cx,cy,n,r,rot=0){const p=[];for(let i=0;i<n;i++)p.push(pol(cx,cy,r,rot+i*2*PI/n));return pd(p);}
+function starPoly(cx,cy,n,k,r,rot=-PI/2){const p=[];let i=0;do{p.push(pol(cx,cy,r,rot+i*2*PI/n));i=(i+k)%n;}while(i!==0);return pd(p);}
+function lobed(R,n,dep,rot=0){const p=[];for(let k=0;k<360;k++){const a=k/360*2*PI;const r=R*(1-dep+dep*Math.abs(Math.cos(n*(a-rot)/2)));p.push([r*Math.cos(a),r*Math.sin(a)]);}return pd(p);}
+const S=(d,f,sw=2.5)=>`<path d="${d}" fill="var(--${f})" stroke="var(--ln)" stroke-width="${sw}" stroke-linejoin="round"/>`;
+const Ci=(cx,cy,r,f,sw=2.5)=>`<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(r)}" fill="${f==='none'?'none':`var(--${f})`}" stroke="var(--ln)" stroke-width="${sw}"/>`;
+const base=(w,h,f)=>`<rect width="${w}" height="${h}" fill="var(--${f})"/>`;
+const CORN=[[0,0],[100,0],[0,100],[100,100]];
+const MIDS=[[50,0],[0,50],[100,50],[50,100]];
+
+/* ---------- border tiles (100×100, 4-fold symmetric) ---------- */
+const BORDERS=[
+ {nm:'마름모 격자',info:'마름모를 가로·세로로 나누는 두 선이 대칭축이에요. 위아래로도, 좌우로도 접으면 딱 겹쳐요.',
+  tile(){let s=base(100,100,'f2');
+    s+=S(ngon(50,50,4,48,0),'f1',4);
+    s+=`<path d="M50 4V96M4 50H96" stroke="var(--ln)" stroke-width="4"/>`;
+    s+=S(ngon(50,50,4,22,0),'f3',4)+S(ngon(50,50,4,8,0),'f4',3);
+    CORN.forEach(([x,y])=>s+=S(ngon(x,y,4,14,0),'f0',3));return s;}},
+ {nm:'팔각 별 십자',info:'정사각형 두 개를 45° 돌려 겹치면 팔각 별(룹 엘 히즈브)이 생겨요. 그 안에 십자를 넣었어요.',
+  tile(){let s=base(100,100,'f2');
+    s+=S(star(50,50,8,47,36,PI/8),'f1',4);
+    const a=9,b=27;s+=S(pd([[50-a,50-b],[50+a,50-b],[50+a,50-a],[50+b,50-a],[50+b,50+a],[50+a,50+a],[50+a,50+b],[50-a,50+b],[50-a,50+a],[50-b,50+a],[50-b,50-a],[50-a,50-a]]),'f3',3.5);
+    s+=S(ngon(50,50,4,7,PI/4),'f4',3);
+    CORN.forEach(([x,y])=>s+=Ci(x,y,11,'f0',3));return s;}},
+ {nm:'별과 네 원',info:'같은 크기의 원 네 개를 겹치면 가운데에 꽃잎 모양이 생겨요. 컴퍼스만으로 그릴 수 있어요.',
+  tile(){let s=base(100,100,'f2');
+    s+=S(star(50,50,8,47,31,0),'f1',3.5);
+    [[61,50],[39,50],[50,61],[50,39]].forEach(([x,y])=>s+=Ci(x,y,12,'f3',2.5));
+    [[61,50],[39,50],[50,61],[50,39]].forEach(([x,y])=>s+=Ci(x,y,12,'none',2.5));
+    s+=Ci(50,50,6,'f4',2.5);
+    CORN.forEach(([x,y])=>s+=S(ngon(x,y,4,9,PI/4),'f0',3));return s;}},
+ {nm:'엮은 X 매듭',info:'두 띠가 X자로 엇갈려 지나가요. 띠가 위아래로 번갈아 지나가는 ‘엮기’는 이슬람 장식의 대표 기법이에요.',
+  tile(){let s=base(100,100,'f0');
+    s+=`<path d="M0 0L100 100" stroke="var(--ln)" stroke-width="24"/><path d="M0 0L100 100" stroke="var(--f1)" stroke-width="13"/>`;
+    s+=`<path d="M100 0L0 100" stroke="var(--ln)" stroke-width="24"/><path d="M100 0L0 100" stroke="var(--f1)" stroke-width="13"/>`;
+    s+=`<path d="M0 0L36 36M64 64L100 100" stroke="var(--ln)" stroke-width="24"/><path d="M0 0L37 37M63 63L100 100" stroke="var(--f1)" stroke-width="13"/>`;
+    CORN.forEach(([x,y])=>s+=`<rect x="${x-15}" y="${y-15}" width="30" height="30" fill="var(--f3)" stroke="var(--ln)" stroke-width="4"/>`+`<rect x="${x-5}" y="${y-5}" width="10" height="10" fill="var(--f4)" stroke="var(--ln)" stroke-width="2"/>`);
+    MIDS.forEach(([x,y])=>s+=`<rect x="${x-7}" y="${y-7}" width="14" height="14" fill="var(--f2)" stroke="var(--ln)" stroke-width="3"/>`);
+    s+=S(ngon(50,50,4,8,0),'f4',3);return s;}},
+ {nm:'팔각 별선',info:'원 위에 점 8개를 찍고 3칸씩 건너뛰며 이으면, 연필을 떼지 않고 별 하나가 완성돼요.',
+  tile(){let s=base(100,100,'f2');
+    s+=`<path d="${starPoly(50,50,8,3,48,PI/8)}" fill="var(--f1)" fill-rule="nonzero" stroke="var(--ln)" stroke-width="3.5" stroke-linejoin="round"/>`;
+    s+=S(ngon(50,50,8,15,PI/8),'f3',3)+Ci(50,50,5,'f4',2.5);
+    CORN.forEach(([x,y])=>s+=S(ngon(x,y,4,12,0),'f4',3));
+    MIDS.forEach(([x,y])=>s+=Ci(x,y,4,'f0',2));return s;}},
+ {nm:'계단 마름모',info:'작은 정사각형을 계단처럼 쌓은 무늬예요. 실을 한 칸씩 엮어 짜는 킬림(평직 카펫)에서 자주 볼 수 있어요.',
+  tile(){const v=(i,j)=>{i=(i+10)%10;j=(j+10)%10;const x=i-4.5,y=j-4.5,ax=Math.abs(x),ay=Math.abs(y),d=ax+ay;
+      if((ax===.5&&ay<=2.5)||(ay===.5&&ax<=2.5))return 'f4';if(d<=3)return 'f3';if(d<=4)return 'f0';if(d<=6)return 'f1';if(d<=7)return 'f0';return 'f2';};
+    let s='',e='';
+    for(let i=0;i<10;i++)for(let j=0;j<10;j++)s+=`<rect x="${i*10}" y="${j*10}" width="10.4" height="10.4" fill="var(--${v(i,j)})"/>`;
+    for(let i=-1;i<10;i++)for(let j=-1;j<10;j++){
+      if(v(i,j)!==v(i+1,j))e+=`M${(i+1)*10} ${j*10}V${(j+1)*10}`;
+      if(v(i,j)!==v(i,j+1))e+=`M${i*10} ${(j+1)*10}H${(i+1)*10}`;}
+    return s+`<path d="${e}" fill="none" stroke="var(--ln)" stroke-width="2.4" stroke-linecap="square"/>`;}},
+];
+
+/* ---------- background tiles ---------- */
+function rosette(cx,cy){let o='';
+  o+=S(star(cx,cy,8,35.3,24,0),'f2');
+  for(let i=0;i<8;i++){const a=i*PI/4;
+    o+=S(pd([pol(cx,cy,11,a-PI/8),pol(cx,cy,7,a),pol(cx,cy,11,a+PI/8),pol(cx,cy,20,a+PI/8-.13),pol(cx,cy,28,a),pol(cx,cy,20,a-PI/8+.13)]),'f1',2.2);}
+  o+=S(star(cx,cy,8,11,7,PI/8),'f3',2)+Ci(cx,cy,3.2,'f4',1.6);return o;}
+const HEXH=100*Math.sqrt(3);
+const BGS=[
+ {nm:'별과 십자',info:'팔각 별과 십자가 빈틈없이 맞물려요. 이란과 튀르키예의 타일 벽에서 자주 쓰인 짝꿍 무늬예요.',w:100,h:100,
+  tile(){let s=base(100,100,'f2');const ro=35.36,ri=ro*.7;
+    [[50,50],...CORN].forEach(([x,y])=>{s+=S(star(x,y,8,ro,ri,0),'f1')+S(ngon(x,y,8,ri*.62,PI/8),'f3',2.2)+S(star(x,y,8,ri*.42,ri*.22,0),'f4',1.6);});
+    MIDS.forEach(([x,y])=>s+=S(ngon(x,y,4,6,PI/4),'f0',2));return s;}},
+ {nm:'팔각 장미',info:'가운데 별을 꽃잎 여덟 장이 둘러싼 ‘로제트’예요. 8방향으로 똑같이 퍼져 나가요.',w:100,h:100,
+  tile(){let s=base(100,100,'f0');[[50,50],...CORN].forEach(([x,y])=>s+=rosette(x,y));
+    MIDS.forEach(([x,y])=>s+=S(ngon(x,y,4,7,PI/4),'f4',2));return s;}},
+ {nm:'별과 꽃',info:'큰 팔각 별 안에 다섯 꽃잎 꽃을 넣었어요. 별과 별 사이에는 작은 별과 마름모가 끼어 있어요.',w:100,h:100,
+  tile(){let s=base(100,100,'f0');
+    CORN.forEach(([x,y])=>s+=S(star(x,y,8,22,13,PI/8),'f2')+Ci(x,y,6,'f4',2));
+    MIDS.forEach(([x,y])=>s+=S(ngon(x,y,4,10,0),'f4'));
+    s+=S(star(50,50,8,42,28,PI/8),'f1')+S(ngon(50,50,8,21,PI/8),'f2',2.2);
+    for(let i=0;i<5;i++){const a=-PI/2+i*2*PI/5;const [x,y]=pol(50,50,9,a);
+      s+=`<ellipse cx="${f2(x)}" cy="${f2(y)}" rx="4.3" ry="8" transform="rotate(${f2(a*180/PI+90)} ${f2(x)} ${f2(y)})" fill="var(--f3)" stroke="var(--ln)" stroke-width="1.6"/>`;}
+    s+=Ci(50,50,3.6,'f4',1.6);return s;}},
+ {nm:'열두 별꽃',info:'꼭짓점이 12개인 별이에요. 360°를 12로 나누면 30°씩 돌아가며 같은 모양이 나와요.',w:100,h:100,
+  tile(){let s=base(100,100,'f0');
+    CORN.forEach(([x,y])=>s+=S(star(x,y,8,27,18,PI/8),'f2')+S(ngon(x,y,8,9,0),'f4',2));
+    MIDS.forEach(([x,y])=>s+=S(star(x,y,4,10,4,PI/4),'f4',2));
+    s+=S(star(50,50,12,38,29,0),'f1')+Ci(50,50,21,'f0',2.2);
+    for(let i=0;i<12;i++){const a=i*PI/6;const [x,y]=pol(50,50,12,a);
+      s+=`<ellipse cx="${f2(x)}" cy="${f2(y)}" rx="3" ry="7.2" transform="rotate(${f2(a*180/PI+90)} ${f2(x)} ${f2(y)})" fill="var(--f3)" stroke="var(--ln)" stroke-width="1.4"/>`;}
+    s+=Ci(50,50,4.5,'f4',1.6);return s;}},
+ {nm:'여섯 별',info:'정삼각형 두 개를 겹친 육각 별이에요. 정육각형 격자 위에 놓여서 빈틈 없이 이어져요.',w:100,h:HEXH,
+  tile(){const h=HEXH;let s=base(100,h,'f2');
+    [[0,0],[100,0],[50,h/2],[0,h],[100,h]].forEach(([x,y])=>{s+=S(star(x,y,6,50,28.87,0),'f1')+S(ngon(x,y,6,19,PI/6),'f3',2.2)+S(star(x,y,6,9,5.2,0),'f4',1.6);});
+    [[50,h/6],[0,h/3],[100,h/3],[50,h*5/6],[0,h*2/3],[100,h*2/3]].forEach(([x,y])=>s+=S(ngon(x,y,6,6,0),'f0',1.8));return s;}},
+ {nm:'원의 교차',info:'컴퍼스로 같은 크기의 원을 겹쳐 그리면 렌즈 모양 꽃잎이 생겨요. 모든 기하학 무늬의 출발점이에요.',w:100,h:100,
+  tile(){let s=base(100,100,'f0');
+    CORN.forEach(([x,y])=>s+=`<path d="M${x} ${y}A50 50 0 0 0 50 50A50 50 0 0 0 ${x} ${y}Z" fill="var(--f1)" stroke="var(--ln)" stroke-width="2.2"/>`);
+    [...CORN,[50,50],...MIDS].forEach(([x,y])=>s+=Ci(x,y,50,'none',2.2));
+    s+=Ci(50,50,8,'f3',2.2);CORN.forEach(([x,y])=>s+=Ci(x,y,8,'f3',2.2));
+    MIDS.forEach(([x,y])=>s+=S(star(x,y,4,9,3.5,0),'f4',1.8));return s;}},
+];
+
+/* ---------- medallions (radius 100, centred on 0,0) ---------- */
+const POINTS=[
+ {nm:'없음',info:'메달리온 없이 배경 무늬만 끝없이 이어지게 해요. 무한히 반복되는 무늬는 끝없음을 상징하기도 해요.',draw:()=>''},
+ {nm:'팔엽 장미',info:'카펫 한가운데의 큰 무늬를 메달리온이라고 해요. 여덟 장의 꽃잎이 겹겹이 피어나요.',
+  draw(){return S(lobed(100,8,.22),'f1',3)+S(lobed(76,8,.25,PI/8),'f2',3)+S(star(0,0,8,58,40,0),'f3',3)+Ci(0,0,27,'f4',3)+Ci(0,0,12,'f0',2.5);}},
+ {nm:'열두 별',info:'열두 꼭짓점 별 두 겹을 엇갈려 쌓았어요. 위아래 반쪽 메달리온과 함께 대칭을 이뤄요.',
+  draw(){let s=S(star(0,0,12,100,80,0),'f2',3)+S(star(0,0,12,77,60,PI/12),'f1',3)+Ci(0,0,46,'f0',3);
+    for(let i=0;i<6;i++){const a=i*PI/3;const [x,y]=pol(0,0,22,a);s+=`<ellipse cx="${f2(x)}" cy="${f2(y)}" rx="9" ry="18" transform="rotate(${f2(a*180/PI+90)} ${f2(x)} ${f2(y)})" fill="var(--f3)" stroke="var(--ln)" stroke-width="2.5"/>`;}
+    return s+Ci(0,0,8,'f4',2.5);}},
+ {nm:'마름모 메달리온',info:'페르시아 카펫에 많은 길쭉한 마름모꼴 메달리온이에요. 위아래 끝이 카펫의 긴 방향을 따라가요.',
+  draw(){const lz=k=>`M0 ${-100*k}Q${30*k} ${-40*k} ${62*k} 0Q${30*k} ${40*k} 0 ${100*k}Q${-30*k} ${40*k} ${-62*k} 0Q${-30*k} ${-40*k} 0 ${-100*k}Z`;
+    return Ci(0,-104,9,'f4',2.5)+Ci(0,104,9,'f4',2.5)+S(lz(1),'f1',3)+S(lz(.74),'f2',3)+S(lz(.5),'f0',3)+S(star(0,0,8,30,19,0),'f3',2.5)+Ci(0,0,8,'f4',2.5);}},
+ {nm:'꽃테 원형',info:'열여섯 장 꽃잎 테두리 안에 둥근 고리를 여러 겹 둘렀어요. 가운데가 비어 있어 배경이 비쳐 보여요.',
+  draw(){return S(lobed(100,16,.13),'f1',3)+Ci(0,0,83,'f2',3)+Ci(0,0,71,'f0',2.5)+Ci(0,0,63,'f3',3)+Ci(0,0,52,'f0',2.5)+Ci(0,0,45,'f2',3);}},
+ {nm:'아라베스크 별',info:'팔각 별 두 개를 22.5°씩 엇갈려 겹쳤어요. 겹칠수록 꼭짓점이 많은 별처럼 보여요.',
+  draw(){return S(star(0,0,8,100,62,0),'f1',3)+S(star(0,0,8,82,52,PI/8),'f2',3)+S(ngon(0,0,8,40,PI/8),'f3',3)+S(star(0,0,8,26,14,0),'f4',2.5)+Ci(0,0,6,'f0',2);}},
+];
+
+/* ---------- palettes: line, base, c1..c4 ---------- */
+const PALETTES=[
+ {nm:'알함브라',c:['#13213d','#b9e0da','#f4b63f','#0f7a4d','#b3192f','#2050a8']},
+ {nm:'이즈닉',c:['#142340','#f3ede1','#1c9d93','#0d4d3f','#2650b0','#d6a3a3']},
+ {nm:'스테인드글라스',c:['#10193a','#e3f5f2','#d8263b','#ffc233','#1f9a4a','#2457c9']},
+ {nm:'카샨 카펫',c:['#2b1a12','#f1e3c6','#9e2a22','#d58c3b','#233a6b','#e9c46a']},
+ {nm:'흑백',c:['#1d1f24','#ffffff','#2d3038','#e4e6ea','#9aa0a8','#5b6068']},
+ {nm:'사마르칸트',c:['#0d2a4a','#f6f1e7','#1e8fc8','#67c3d4','#0d4f8b','#e0b04a']},
+];
+const SWATCHES=['#13213d','#1a1a1a','#1f3f8f','#2050a8','#1c9d93','#67c3d4','#b9e0da','#0f7a4d','#0d4d3f','#7a8b3a','#2b1a12','#6b2d5c',
+ '#f4b63f','#e0b04a','#d58c3b','#c0582f','#b3192f','#9e2a22','#d6a3a3','#f3ede1','#f6f1e7','#ffffff','#e4e6ea','#9aa0a8'];
+const VARS=['ln','f0','f1','f2','f3','f4'];
+const MONO=['#1a1a1a','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff'];
+const cur=()=>st.colored?st.colors:MONO;
+const VARLBL=['선','바탕','색 1','색 2','색 3','색 4'];
+
+/* ---------- state ---------- */
+const DEF={view:'home',mode:'carpet',step:0,border:3,bg:0,point:1,pal:0,colors:PALETTES[0].c.slice(),scale:1,visited:{},colored:false};
+let st=Object.assign({},DEF);
+try{const s=JSON.parse(localStorage.getItem('islamic-pattern-studio')||'null');if(s&&s.colors)st=Object.assign({},DEF,s);}catch(e){}
+const save=()=>{try{localStorage.setItem('islamic-pattern-studio',JSON.stringify(st));}catch(e){}};
+
+const STEPS={carpet:['border','bg','point','color','done'],window:['border','bg','color','done']};
+const TABLBL={border:['테두리','Border'],bg:['배경','Background'],point:['포인트','Point'],color:['색상','Color'],done:['완성','Finish']};
+const MODENM={carpet:'카펫',window:'창틀'};
+
+/* ---------- SVG assembly ---------- */
+function patDef(id,t,s,tx,ty){return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(t.w||100)}" height="${f2(t.h||100)}" patternTransform="translate(${f2(tx)} ${f2(ty)}) scale(${s})">${t.svg}</pattern>`;}
+const cache={};
+function tileOf(kind,i){const k=kind+i;if(!cache[k]){const src=kind==='b'?BORDERS[i]:BGS[i];cache[k]={w:src.w||100,h:src.h||100,svg:src.tile()};}return cache[k];}
+function glassTile(){const w=24*Math.sqrt(3)/2*2/2*1, r=12, hw=r*Math.sqrt(3), hh=r*3;let s=`<rect width="${f2(hw)}" height="${f2(hh)}" fill="var(--gl)"/>`;
+  [[0,0],[hw,0],[hw/2,hh/2],[0,hh],[hw,hh]].forEach(([x,y])=>s+=`<path d="${ngon(x,y,6,r,PI/6)}" fill="none" stroke="var(--ln)" stroke-width="2.6"/>`);return {w:hw,h:hh,svg:s};}
+const GLASS=glassTile();
+
+function art(o,id,attrs=''){
+  const bt=tileOf('b',o.border), gt=tileOf('g',o.bg), sc=o.scale;
+  const gx=CX-gt.w/2*sc, gy=CY-gt.h/2*sc;
+  let d=`<defs>${patDef(id+'b',bt,BAND/100,PAD,PAD)}${patDef(id+'g',gt,sc,gx,gy)}${patDef(id+'w',GLASS,1,CX-GLASS.w/2,0)}
+    <clipPath id="${id}c"><rect x="${FX}" y="${FY}" width="${FW}" height="${FH}"/></clipPath></defs>`;
+  let s=`<rect width="${W}" height="${H}" fill="var(--ln)"/>
+    <rect x="${PAD}" y="${PAD}" width="${W-2*PAD}" height="${H-2*PAD}" fill="url(#${id}b)"/>
+    <rect x="${PAD+BAND}" y="${PAD+BAND}" width="${W-2*PAD-2*BAND}" height="${H-2*PAD-2*BAND}" fill="var(--ln)"/>`;
+  if(o.mode==='carpet'){
+    s+=`<rect x="${FX}" y="${FY}" width="${FW}" height="${FH}" fill="url(#${id}g)"/>`;
+    const m=POINTS[o.point];
+    if(o.point>0){const g=m.draw(),R=FW*.3,Rh=FW*.36,Ra=FW*.3*.36,off=FH*.27;
+      s+=`<g clip-path="url(#${id}c)">
+        <g transform="translate(${CX} ${FY}) scale(${f2(Rh/100)})">${g}</g>
+        <g transform="translate(${CX} ${FY+FH}) scale(${f2(Rh/100)})">${g}</g>
+        <g transform="translate(${CX} ${f2(CY-off)}) scale(${f2(Ra/100)})">${g}</g>
+        <g transform="translate(${CX} ${f2(CY+off)}) scale(${f2(Ra/100)})">${g}</g>
+        <g transform="translate(${CX} ${CY}) scale(${f2(R/100)})">${g}</g></g>`;}
+    s+=`<rect x="${FX-5}" y="${FY-5}" width="${FW+10}" height="${FH+10}" fill="none" stroke="var(--f0)" stroke-width="2"/>`;
+  }else{
+    const r=FW/2, barY=FY+262, dw=90, dTop=FY+FH-320;
+    s+=`<rect x="${FX}" y="${FY}" width="${FW}" height="${barY-FY}" fill="url(#${id}w)"/>
+      <path d="M${FX} ${barY}A${r} ${r} 0 0 1 ${FX+FW} ${barY}Z" fill="url(#${id}g)" stroke="var(--ln)" stroke-width="12"/>
+      <rect x="${FX}" y="${barY}" width="${FW}" height="${FY+FH-barY}" fill="url(#${id}g)"/>
+      <rect x="${FX}" y="${barY-7}" width="${FW}" height="14" fill="var(--ln)"/>
+      <rect x="${CX-6}" y="${barY}" width="12" height="${dTop-dw-barY+4}" fill="var(--ln)"/>
+      <path d="M${CX-dw} ${FY+FH}V${dTop}A${dw} ${dw} 0 0 1 ${CX+dw} ${dTop}V${FY+FH}Z" fill="url(#${id}w)" stroke="var(--ln)" stroke-width="12"/>
+      <path d="M${CX} ${dTop-dw}V${FY+FH}" stroke="var(--ln)" stroke-width="5"/>
+      <rect x="${FX}" y="${FY}" width="${FW}" height="${FH}" fill="none" stroke="var(--ln)" stroke-width="10"/>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" ${attrs}>${d}${s}</svg>`;
+}
+function thumbTile(kind,i,id){const t=tileOf(kind,i);const sc=kind==='b'?.6:.62;
+  return `<svg viewBox="0 0 120 120" aria-hidden="true"><defs>${patDef(id,t,sc,60-t.w/2*sc,60-t.h/2*sc)}</defs><rect width="120" height="120" fill="url(#${id})"/></svg>`;}
+function thumbPoint(i){if(i===0)return `<div class="none">없음</div>`;
+  return `<svg viewBox="-115 -115 230 230" aria-hidden="true"><rect x="-115" y="-115" width="230" height="230" fill="var(--f0)"/><g transform="scale(${i===3?.98:1})">${POINTS[i].draw()}</g></svg>`;}
+
+/* ---------- colors ---------- */
+const app=document.getElementById('app');
+function applyColors(){const c=cur();VARS.forEach((v,i)=>document.documentElement.style.setProperty('--'+v,c[i]));}
+
+/* ---------- views ---------- */
+const ICON={
+ prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+ next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>',
+ zoom:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>',
+ chk:'<svg viewBox="0 0 16 16" width="16" height="16"><path d="M4.2 8.3l2.4 2.4 5-5" fill="none" stroke="#0f1f3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+
+function renderHome(){
+  app.innerHTML=`<main class="home"><div class="home-inner">
+    <div><div class="eyebrow">Islamic Geometric Pattern</div>
+      <h1>이슬람 기하학 패턴 공방</h1>
+      <p class="lede">테두리, 배경, 포인트 무늬를 하나씩 고르고 색을 입혀 나만의 카펫이나 창틀을 디자인해 보세요. 고르는 즉시 그림에 반영되고, 무늬마다 어떤 기하학 원리로 만들어졌는지 설명이 나와요.</p></div>
+    <div class="mode-grid">
+      <button class="mode-card" data-mode="carpet"><div class="mc-art">${art(Object.assign({},st,{mode:'carpet'}),'hc')}</div>
+        <div class="mc-txt"><h2>카펫</h2><p>테두리 · 배경 · 포인트(메달리온) · 색상</p><span class="go">카펫 만들기 ${ICON.next.replace('<svg','<svg width="18" height="18"')}</span></div></button>
+      <button class="mode-card" data-mode="window"><div class="mc-art">${art(Object.assign({},st,{mode:'window'}),'hw')}</div>
+        <div class="mc-txt"><h2>창틀</h2><p>테두리 · 배경 · 색상</p><span class="go">창틀 만들기 ${ICON.next.replace('<svg','<svg width="18" height="18"')}</span></div></button>
+    </div>
+    <div class="facts">
+      <div><b>컴퍼스와 자</b><span>원과 직선만으로 별, 꽃, 매듭 무늬를 그려요.</span></div>
+      <div><b>대칭과 회전</b><span>8각 별은 45°, 12각 별은 30°마다 같은 모양이 돌아와요.</span></div>
+      <div><b>끝없는 반복</b><span>같은 조각을 빈틈없이 이어 붙여 벽과 바닥을 채워요.</span></div>
+    </div></div></main>`;
+  app.querySelectorAll('.mode-card').forEach(b=>b.onclick=()=>{st.mode=b.dataset.mode;st.view='studio';st.step=0;st.visited={};st.colored=false;save();render();});
+}
+
+function optGrid(kind){
+  const list=kind==='border'?BORDERS:kind==='bg'?BGS:POINTS, cur=st[kind];
+  return `<div class="opt-grid ${kind==='bg'?'with-slider':''}" role="group">${list.map((o,i)=>`<button class="opt" data-i="${i}" aria-pressed="${i===cur}">
+     <div class="thumb">${kind==='point'?thumbPoint(i):thumbTile(kind==='border'?'b':'g',i,'t'+kind+i)}</div><div class="nm">${o.nm}</div></button>`).join('')}</div>
+     <div class="info"><b>${list[cur].nm}</b><span>${list[cur].info}</span></div>`;
+}
+function sheetBody(step){
+  if(step==='border'||step==='bg'||step==='point'){
+    let h=optGrid(step);
+    if(step==='bg')h+=`<div class="slider"><div class="row"><label for="scale">크기 조정</label><span>−</span><input id="scale" type="range" min="0.5" max="1.6" step="0.05" value="${st.scale}"><span>+</span></div></div>`;
+    return h;}
+  if(step==='color'){
+    return `<div class="pal-grid">${PALETTES.map((p,i)=>`<button class="pal" data-i="${i}" aria-pressed="${st.colored&&st.pal===i}"><div class="sw">${p.c.map(c=>`<i style="background:${c}"></i>`).join('')}</div><span class="nm">${p.nm}</span></button>`).join('')}</div>
+      ${st.colored?'':'<p class="hint">색 묶음을 누르거나, 아래 동그라미를 눌러 한 곳씩 색을 골라 보세요.</p>'}<div class="custom"><div class="custom-h"><b>색 하나씩 바꾸기</b><small>누르면 색 고르기 창이 열려요</small></div>
+        <div class="slots">${VARS.map((v,i)=>`<button class="slot" data-i="${i}" aria-label="${VARLBL[i]} 색 바꾸기"><i style="background:var(--${v})"></i>${VARLBL[i]}</button>`).join('')}</div>
+</div>`;}
+  const pick=[`테두리 · ${BORDERS[st.border].nm}`,`배경 · ${BGS[st.bg].nm}`];
+  if(st.mode==='carpet')pick.push(`포인트 · ${POINTS[st.point].nm}`);
+  pick.push(`색상 · ${!st.colored?'색 없음 (흰색)':st.pal>=0?PALETTES[st.pal].nm:'직접 고른 색'}`);
+  return `<div class="done-box"><h3>${MODENM[st.mode]} 완성!</h3>
+    <p>왼쪽 그림이 지금까지 고른 무늬로 만든 ${MODENM[st.mode]}예요. 이미지로 저장하거나, 같은 무늬로 ${st.mode==='carpet'?'창틀':'카펫'}도 만들어 보세요.</p>
+    <div class="recipe">${pick.map(p=>`<span>${p}</span>`).join('')}</div>
+    <div class="actions"><button class="btn primary" id="savePng">이미지 저장 (PNG)</button>
+      <button class="btn" id="swapMode">같은 무늬로 ${st.mode==='carpet'?'창틀':'카펫'} 보기</button>
+      <button class="btn" id="random">무작위로 섞기</button></div></div>`;
+}
+const INSTR={border:['가장자리를 두를 테두리 무늬를 골라 주세요.','Select a border pattern.'],
+ bg:['안쪽을 채울 배경 무늬를 골라 주세요.','Select a background pattern.'],
+ point:['가운데를 꾸밀 메달리온을 골라 주세요.','Select a center medallion.'],
+ color:['색 묶음을 고르거나, 색을 하나씩 바꿔 보세요.','Select a color set.'],
+ done:['디자인이 완성되었어요.','Your design is ready.']};
+
+function renderStudio(){
+  const steps=STEPS[st.mode]; if(st.step>=steps.length)st.step=steps.length-1;
+  const step=steps[st.step]; st.visited[step]=1;
+  app.innerHTML=`<div class="studio">
+    <section class="stage" aria-label="미리보기"><div class="cap">제작한 이미지를 여기에서 확인하세요.<small>Check the image you created here.</small></div>
+      <div class="art-wrap"><div id="artWrap" style="height:100%">${art(st,'m','role="img" aria-label="'+MODENM[st.mode]+' 디자인 미리보기"')}</div><button class="zoom" id="zoom" aria-label="크게 보기">${ICON.zoom}</button></div></section>
+    <section class="panel">
+      <div class="panel-head"><div class="ttl"><h1>이슬람 기하학 패턴 체험</h1><span class="mode-tag">${MODENM[st.mode]} 디자인 · ${st.step+1} / ${steps.length}</span></div>
+        <div class="nav"><button class="circ" id="prev" aria-label="이전">${ICON.prev}</button><button class="circ" id="home" aria-label="처음 화면">${ICON.home}</button><button class="circ next" id="next" aria-label="다음" ${step==='done'?'hidden':''}>${ICON.next}</button></div></div>
+      <div class="tabbox"><div class="tabs ${steps.length>4?'five':''}" role="tablist">${steps.map((k,i)=>`<button class="tab ${st.visited[k]&&k!=='done'?'done':''}" role="tab" data-i="${i}" aria-selected="${i===st.step}"><span class="ko">${TABLBL[k][0]}</span><span class="en">${TABLBL[k][1]}</span><span class="chk">${ICON.chk}</span></button>`).join('')}</div>
+      <div class="sheet"><p class="instr">${INSTR[step][0]}</p>${sheetBody(step)}</div></div>
+    </section></div>`;
+  bindStudio(step);
+  fit();
+}
+function fitTabs(){const tb=app.querySelector('.tabs');if(!tb)return;
+  tb.classList.remove('no-en','no-chk','small');
+  const over=()=>[...tb.children].some(t=>{const cs=getComputedStyle(t);let need=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight);let n=0;
+    [...t.children].forEach(c=>{if(getComputedStyle(c).display!=='none'){need+=c.getBoundingClientRect().width;n++;}});need+=Math.max(0,n-1)*parseFloat(cs.columnGap||6);return need>t.clientWidth+.5;});
+  for(const k of ['no-en','no-chk','small']){if(!over())break;tb.classList.add(k);}
+}
+function fit(){fitTabs();const pn=app.querySelector('.panel');if(!pn)return;
+  pn.classList.remove('tight','tighter');
+  const over=()=>pn.scrollHeight>pn.clientHeight+1;
+  const g=pn.querySelector('.opt-grid');
+  if(g){let w=Math.min(g.parentElement.clientWidth,540);g.style.width=w+'px';while(over()&&w>150){w-=8;g.style.width=w+'px';}}
+  if(over())pn.classList.add('tight');
+  if(over())pn.classList.add('tighter');
+  if(g&&over()){let w=parseFloat(g.style.width);while(over()&&w>110){w-=8;g.style.width=w+'px';}}
+}
+let fitRaf=0;addEventListener('resize',()=>{cancelAnimationFrame(fitRaf);fitRaf=requestAnimationFrame(fit);});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fit());
+function refreshArt(){const w=document.getElementById('artWrap');if(w)w.innerHTML=art(st,'m','role="img" aria-label="'+MODENM[st.mode]+' 디자인 미리보기"');}
+function bindStudio(step){
+  const $=s=>app.querySelector(s);
+  app.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{st.step=+t.dataset.i;save();render();});
+  $('#prev').onclick=()=>{if(st.step===0){st.view='home';}else st.step--;save();render();};
+  $('#home').onclick=()=>{st.view='home';save();render();};
+  $('#next').onclick=()=>{st.step++;save();render();};
+  $('#zoom').onclick=openBig;
+  if(step==='border'||step==='bg'||step==='point'){
+    app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{st[step]=+b.dataset.i;save();
+      app.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed',x===b));
+      const list=step==='border'?BORDERS:step==='bg'?BGS:POINTS;const inf=app.querySelector('.info');inf.innerHTML=`<b>${list[st[step]].nm}</b><span>${list[st[step]].info}</span>`;fit();
+      refreshArt();});
+    const sl=$('#scale');if(sl)sl.oninput=()=>{st.scale=+sl.value;refreshArt();save();};
+  }
+  if(step==='color'){
+    app.querySelectorAll('.pal').forEach(b=>b.onclick=()=>{st.pal=+b.dataset.i;st.colors=PALETTES[st.pal].c.slice();st.colored=true;applyColors();save();const h=app.querySelector('.hint');if(h)h.remove();
+      app.querySelectorAll('.pal').forEach(x=>x.setAttribute('aria-pressed',x===b));
+      });
+    app.querySelectorAll('.slot').forEach(b=>b.onclick=()=>openPicker(+b.dataset.i));
+  }
+  if(step==='done'){
+    $('#savePng').onclick=exportPNG;
+    $('#swapMode').onclick=()=>{st.mode=st.mode==='carpet'?'window':'carpet';st.step=STEPS[st.mode].length-1;STEPS[st.mode].forEach(k=>st.visited[k]=1);save();render();};
+    $('#random').onclick=()=>{const r=n=>Math.floor(Math.random()*n);st.border=r(BORDERS.length);st.bg=r(BGS.length);st.point=1+r(POINTS.length-1);
+      st.pal=r(PALETTES.length);st.colors=PALETTES[st.pal].c.slice();st.colored=true;st.scale=[.7,.85,1,1.2][r(4)];applyColors();save();render();};
+  }
+}
+function render(){applyColors();if(st.view==='home')renderHome();else renderStudio();window.scrollTo(0,0);}
+
+function openBig(){const d=document.createElement('div');d.className='big';d.setAttribute('role','dialog');d.setAttribute('aria-label','크게 보기');
+  d.innerHTML=`<div class="art-big">${art(st,'z')}</div><button class="close" aria-label="닫기">✕</button>`;
+  const close=()=>{d.remove();document.removeEventListener('keydown',esc);};const esc=e=>{if(e.key==='Escape')close();};
+  d.onclick=close;document.addEventListener('keydown',esc);document.body.appendChild(d);d.querySelector('.close').focus();}
+/* ---------- colour picker (hue bar + saturation/lightness field + fine sliders) ---------- */
+function hexToHsl(hex){let r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;
+  if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;}
+  return [Math.round(h),Math.round(s*100),Math.round(l*100)];}
+function hslToHex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,9-k(n),1));
+  return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');}
+function openPicker(i){
+  const pn=app.querySelector('.panel');if(!pn)return;
+  const snap={colors:st.colors.slice(),colored:st.colored,pal:st.pal};
+  const old=cur()[i];let [h,s,l]=hexToHsl(old);
+  const d=document.createElement('div');d.className='picker';d.setAttribute('role','dialog');d.setAttribute('aria-label',VARLBL[i]+' 색 고르기');
+  d.innerHTML=`<div class="pk-head"><b>${VARLBL[i]} 색 고르기</b><div class="pk-cmp"><i style="background:${old}" title="원래 색"></i>→<i id="pkNew"></i></div></div>
+    <p class="pk-cap">네모 안: 가로는 채도(탁하게 ↔ 선명하게), 세로는 명도(밝게 ↕ 어둡게) · 아래 띠: 색상</p>
+    <div class="pk-field" id="pkF"><div class="pk-dot"></div></div>
+    <div class="pk-hue" id="pkH"><div class="pk-dot"></div></div>
+    <div class="pk-rows">
+      <label class="pk-row">색상<input id="pkRh" type="range" min="0" max="360" step="1"><output id="pkOh"></output></label>
+      <label class="pk-row">채도<input id="pkRs" type="range" min="0" max="100" step="1"><output id="pkOs"></output></label>
+      <label class="pk-row">명도<input id="pkRl" type="range" min="0" max="100" step="1"><output id="pkOl"></output></label></div>
+    <div class="pk-sw">${SWATCHES.filter((_,k)=>k%2===0).map(c=>`<button data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div>
+    <div class="pk-btns"><button class="btn ghost" id="pkCancel">취소</button><button class="btn primary" id="pkOk">완료</button></div>`;
+  pn.appendChild(d);
+  const F=d.querySelector('#pkF'),Hb=d.querySelector('#pkH'),fd=F.firstElementChild,hd=Hb.firstElementChild,q=x=>d.querySelector(x);
+  const draw=(apply)=>{const hex=hslToHex(h,s,l);
+    F.style.background=`linear-gradient(to bottom,#fff,rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,#000),linear-gradient(to right,hsl(${h} 0% 50%),hsl(${h} 100% 50%))`;
+    fd.style.left=s+'%';fd.style.top=(100-l)+'%';fd.style.background=hex;hd.style.left=(h/360*100)+'%';hd.style.background=`hsl(${h} 100% 50%)`;
+    q('#pkNew').style.background=hex;
+    q('#pkRh').value=h;q('#pkRs').value=s;q('#pkRl').value=l;q('#pkOh').textContent=h+'°';q('#pkOs').textContent=s;q('#pkOl').textContent=l;
+    if(apply){if(!st.colored){st.colors=MONO.slice();st.colored=true;}st.colors[i]=hex;st.pal=-1;applyColors();}};
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const drag=(el,fn)=>{el.onpointerdown=e=>{e.preventDefault();el.setPointerCapture(e.pointerId);fn(e);el.onpointermove=fn;};el.onpointerup=el.onpointercancel=()=>{el.onpointermove=null;};};
+  drag(F,e=>{const r=F.getBoundingClientRect();s=Math.round(clamp((e.clientX-r.left)/r.width,0,1)*100);l=Math.round(100-clamp((e.clientY-r.top)/r.height,0,1)*100);draw(true);});
+  drag(Hb,e=>{const r=Hb.getBoundingClientRect();h=Math.round(clamp((e.clientX-r.left)/r.width,0,1)*360);draw(true);});
+  q('#pkRh').oninput=e=>{h=+e.target.value;draw(true);};q('#pkRs').oninput=e=>{s=+e.target.value;draw(true);};q('#pkRl').oninput=e=>{l=+e.target.value;draw(true);};
+  d.querySelectorAll('.pk-sw button').forEach(b=>b.onclick=()=>{[h,s,l]=hexToHsl(b.dataset.c);draw(true);});
+  const close=()=>{d.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{if(e.key==='Escape'){cancel();}};
+  const cancel=()=>{st.colors=snap.colors;st.colored=snap.colored;st.pal=snap.pal;applyColors();close();};
+  q('#pkCancel').onclick=cancel;
+  q('#pkOk').onclick=()=>{save();close();render();};
+  document.addEventListener('keydown',esc);
+  draw(false);q('#pkOk').focus();
+}
+/* ---------- export ---------- */
+let toastT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200);}
+async function exportPNG(){
+  let dl=null;
+  try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;}catch(e){dl=null;}
+  const standalone=window.top===window;
+  if(!dl&&!standalone){toast('이 화면에서는 이미지 저장을 쓸 수 없어요. 화면을 캡처해 주세요.');return;}
+  let svg=art(st,'x',`width="${W}" height="${H}"`);
+  svg=svg.replace(/var\(--(\w+)\)/g,(m,n)=>{const i=VARS.indexOf(n);return i>=0?cur()[i]:(n==='gl'?'#fbfdfd':'#000');});
+  const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+  const img=new Image();
+  img.onload=()=>{const k=2,c=document.createElement('canvas');c.width=W*k;c.height=H*k;const x=c.getContext('2d');x.drawImage(img,0,0,W*k,H*k);URL.revokeObjectURL(url);
+    c.toBlob(async b=>{if(!b){toast('이미지를 만들지 못했어요. 다시 눌러 주세요.');return;}
+      const fn=`islamic-${st.mode==='carpet'?'carpet':'window'}.png`;
+      if(!dl){const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('이미지를 저장했어요.');return;}
+      try{await dl.save({filename:fn,data:b});toast('이미지를 저장했어요.');}
+      catch(e){if(e&&e.code==='declined')return;if(e&&e.code==='rate_limited')toast('저장 창이 이미 열려 있어요.');else toast('이 화면에서는 이미지 저장을 쓸 수 없어요.');}
+    },'image/png');};
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('이미지를 만들지 못했어요. 다시 눌러 주세요.');};
+  img.src=url;
+}
+
+render();
+})();
+</script>
+
+</body>
+</html>
